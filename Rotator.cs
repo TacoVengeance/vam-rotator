@@ -42,7 +42,7 @@ public class RotatorPlugin : MVRScript
         _remoteController = SetUpChooser("RemoteController", "Remote Controller", SetRemoteController, SyncRemoteControllerChoices);
     }
 
-    public void Update()
+    public void FixedUpdate()
     {
         if (_localTransform != null && _remoteTransform != null)
         {
