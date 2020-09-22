@@ -19,6 +19,12 @@ public class RotatorPlugin : MVRScript
     public JSONStorableStringChooser _remoteAtom;
     public JSONStorableStringChooser _remoteController;
 
+    public JSONStorableFloat _angle_offset_x;
+    public JSONStorableFloat _angle_offset_y;
+    public JSONStorableFloat _angle_offset_z;
+
+    public JSONStorableBool _pauseUpdates;
+
     Transform _localTransform = null;
     Transform _remoteTransform = null;
 
@@ -32,13 +38,31 @@ public class RotatorPlugin : MVRScript
 
         _remoteAtom =       SetUpChooser("RemoteAtom",       "Remote Atom",       null,                SyncRemoteAtomChoices);
         _remoteController = SetUpChooser("RemoteController", "Remote Controller", SetRemoteController, SyncRemoteControllerChoices);
+
+        _angle_offset_x = SetUpFloat("X angle offset", 0f, -180f, 180f);
+        _angle_offset_y = SetUpFloat("Y angle offset", 0f, -180f, 180f);
+        _angle_offset_z = SetUpFloat("Z angle offset", 0f, -180f, 180f);
+
+        _pauseUpdates = SetUpBool("Pause updates", false);
+        SetUpButton("Record current angle offset", SetOffsetToCurrent);
+        SetUpButton("Reset offsets to zero",       SetOffsetsToZero);
+
+        //TODO: if offsets have no value, use current offset
+        //if (/*detect uninitialized values*/)
+        //{
+        //    SetOffsetToCurrent();
+        //}
     }
 
     public void FixedUpdate()
     {
-        if (_localTransform != null && _remoteTransform != null)
+        if (_pauseUpdates.val == false && _localTransform != null && _remoteTransform != null)
         {
-            _localTransform.LookAt(_remoteTransform.position);
+            //source: https://forum.unity.com/threads/lookat-with-an-offset.585250/
+
+            _localTransform.rotation =
+                Quaternion.LookRotation(_remoteTransform.position - _localTransform.position) *
+                Quaternion.Euler(_angle_offset_x.val, _angle_offset_y.val, _angle_offset_z.val);
         }
     }
 
@@ -58,12 +82,12 @@ public class RotatorPlugin : MVRScript
             transform;
     }
 
-    void SyncLocalControllerChoices() 
+    void SyncLocalControllerChoices()
     {
         _localController.choices = ControllersFor(containingAtom).Select(fc => fc.name).ToList();
     }
 
-    void SyncRemoteControllerChoices() 
+    void SyncRemoteControllerChoices()
     {
         if (_remoteAtom.val != null)
         {
@@ -94,11 +118,54 @@ public class RotatorPlugin : MVRScript
         return chooser;
     }
 
+    JSONStorableFloat SetUpFloat(string paramName, float startingValue, float minimum, float maximum)
+    {
+        var floatJSON = new JSONStorableFloat(paramName, startingValue, minimum, maximum);
+        RegisterFloat(floatJSON);
+        CreateSlider(floatJSON);
+        return floatJSON;
+    }
+
+    JSONStorableBool SetUpBool(string paramName, bool startingValue)
+    {
+        var boolJSON = new JSONStorableBool(paramName, startingValue);
+        RegisterBool(boolJSON);
+        CreateToggle(boolJSON);
+        return boolJSON;
+    }
+
     void SetUpLabel(string text)
     {
         var tf = CreateTextField(new JSONStorableString("", ""));
         tf.text = text;
         tf.height = 10;
+    }
+
+    void SetUpButton(string displayName, UnityEngine.Events.UnityAction callback)
+    {
+        var button = CreateButton(displayName);
+        button.button.onClick.AddListener(callback);
+    }
+
+    void SetOffsetsToZero()
+    {
+        _angle_offset_x.val = 0f;
+        _angle_offset_y.val = 0f;
+        _angle_offset_z.val = 0f;
+    }
+
+    void SetOffsetToCurrent()
+    {
+        var rotation = Quaternion.Inverse(Quaternion.LookRotation(_remoteTransform.position - _localTransform.position)) * _localTransform.rotation;
+
+        _angle_offset_x.val = ParseAngle(rotation.eulerAngles.x);
+        _angle_offset_y.val = ParseAngle(rotation.eulerAngles.y);
+        _angle_offset_z.val = ParseAngle(rotation.eulerAngles.z);
+    }
+
+    float ParseAngle(float angle)
+    {
+        return angle > 180 ? angle - 360 : angle;
     }
 
     #endregion
@@ -118,4 +185,5 @@ public class RotatorPlugin : MVRScript
         get { return SuperController.singleton.GetAtomByUid(_remoteAtom.val); }
     }
 }
+
 
