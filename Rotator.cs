@@ -22,8 +22,6 @@ public class RotatorPlugin : MVRScript
     Transform _localTransform = null;
     Transform _remoteTransform = null;
 
-    UIDynamicPopup dp = null;
-
     public override void Init()
     {
         SetUpLabel("Point this controller of the current atom...");
@@ -36,7 +34,7 @@ public class RotatorPlugin : MVRScript
             SetLocalController(_localController);
         }
 
-        SetUpLabel("... toward this controller of this atom:");
+        SetUpLabel("... towards this other controller:");
 
         _remoteAtom =       SetUpChooser("RemoteAtom",       "Remote Atom",       null,                SyncRemoteAtomChoices);
         _remoteController = SetUpChooser("RemoteController", "Remote Controller", SetRemoteController, SyncRemoteControllerChoices);
@@ -49,6 +47,8 @@ public class RotatorPlugin : MVRScript
             _localTransform.LookAt(_remoteTransform.position);
         }
     }
+
+    #region UI
 
     void SetLocalController(JSONStorableStringChooser uiControl)
     {
@@ -82,6 +82,8 @@ public class RotatorPlugin : MVRScript
         _remoteAtom.choices = SuperController.singleton.GetAtoms().Select(fc => fc.name).ToList();
     }
 
+    UIDynamicPopup _dp = null;
+
     JSONStorableStringChooser SetUpChooser(string paramName, string displayName, JSONStorableStringChooser.SetJSONStringCallback setCallback, UIPopup.OnOpenPopup syncCallback)
     {
         var chooser = new JSONStorableStringChooser(paramName, null, null, displayName, setCallback);
@@ -92,8 +94,8 @@ public class RotatorPlugin : MVRScript
             setCallback(chooser);
         }
 
-        dp = CreateFilterablePopup(chooser);
-        dp.popup.onOpenPopupHandlers += syncCallback;
+        _dp = CreateFilterablePopup(chooser);
+        _dp.popup.onOpenPopupHandlers += syncCallback;
 
         return chooser;
     }
@@ -104,6 +106,8 @@ public class RotatorPlugin : MVRScript
         tf.text = text;
         tf.height = 10;
     }
+
+    #endregion
 
     List<FreeControllerV3> ControllersFor(Atom atom)
     {
