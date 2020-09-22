@@ -105,6 +105,7 @@ public class RotatorPlugin : MVRScript
     JSONStorableStringChooser SetUpChooser(string paramName, string displayName, JSONStorableStringChooser.SetJSONStringCallback setCallback, UIPopup.OnOpenPopup syncCallback)
     {
         var chooser = new JSONStorableStringChooser(paramName, null, null, displayName, setCallback);
+        chooser.storeType = JSONStorableParam.StoreType.Full;
         RegisterStringChooser(chooser);
 
         if (chooser.val != null)
@@ -122,6 +123,7 @@ public class RotatorPlugin : MVRScript
     {
         var floatJSON = new JSONStorableFloat(paramName, startingValue, minimum, maximum);
         RegisterFloat(floatJSON);
+        floatJSON.storeType = JSONStorableParam.StoreType.Full;
         CreateSlider(floatJSON);
         return floatJSON;
     }
@@ -130,6 +132,7 @@ public class RotatorPlugin : MVRScript
     {
         var boolJSON = new JSONStorableBool(paramName, startingValue);
         RegisterBool(boolJSON);
+        boolJSON.storeType = JSONStorableParam.StoreType.Full;
         CreateToggle(boolJSON);
         return boolJSON;
     }
