@@ -27,12 +27,6 @@ public class RotatorPlugin : MVRScript
         SetUpLabel("Point this controller of the current atom...");
 
         _localController =  SetUpChooser("LocalController",  "Local Controller",  SetLocalController,  SyncLocalControllerChoices);
-        if (_localController.val == null)
-        {
-            //by default, use first controller in list
-            _localController.val = ControllersFor(containingAtom).First().name;
-            SetLocalController(_localController);
-        }
 
         SetUpLabel("... towards this other controller:");
 
