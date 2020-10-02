@@ -100,8 +100,6 @@ public class RotatorPlugin : MVRScript
         _remoteAtom.choices = SuperController.singleton.GetAtoms().Select(fc => fc.name).ToList();
     }
 
-    UIDynamicPopup _dp = null;
-
     JSONStorableStringChooser SetUpChooser(string paramName, string displayName, JSONStorableStringChooser.SetJSONStringCallback setCallback, UIPopup.OnOpenPopup syncCallback)
     {
         var chooser = new JSONStorableStringChooser(paramName, null, null, displayName, setCallback);
@@ -113,7 +111,7 @@ public class RotatorPlugin : MVRScript
             setCallback(chooser);
         }
 
-        _dp = CreateFilterablePopup(chooser);
+        var _dp = CreateFilterablePopup(chooser);
         _dp.popup.onOpenPopupHandlers += syncCallback;
 
         return chooser;
