@@ -47,12 +47,6 @@ public class RotatorPlugin : MVRScript
         _pauseUpdates = SetUpBool("Pause updates", false);
         SetUpButton("Record current angle offset", SetOffsetToCurrent);
         SetUpButton("Reset offsets to zero",       SetOffsetsToZero);
-
-        //TODO: if offsets have no value, use current offset
-        //if (/*detect uninitialized values*/)
-        //{
-        //    SetOffsetToCurrent();
-        //}
     }
 
     public void FixedUpdate()
@@ -198,5 +192,4 @@ public class RotatorPlugin : MVRScript
         get { return SuperController.singleton.GetAtomByUid(_remoteAtom.val); }
     }
 }
-
 
