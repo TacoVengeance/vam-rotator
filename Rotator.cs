@@ -15,7 +15,7 @@ public class RotatorPlugin : MVRScript
     //point this controller of the atom where this plugin resides...
     public JSONStorableStringChooser _localController;
 
-    //...towards this controller of this atom
+    //...towards this other atom+controller (can be same atom or another)
     public JSONStorableStringChooser _remoteAtom;
     public JSONStorableStringChooser _remoteController;
 
@@ -27,8 +27,8 @@ public class RotatorPlugin : MVRScript
     public UIDynamicButton _setOffsetToCurrent;
     public UIDynamicButton _setOffsetsToZero;
 
-    Transform _localTransform = null;
-    Transform _remoteTransform = null;
+    Transform _localControllerTransform = null;
+    Transform _remoteControllerTransform = null;
 
     static bool UseRightSide = true;
 
@@ -58,12 +58,12 @@ public class RotatorPlugin : MVRScript
 
     public void FixedUpdate()
     {
-        if (_pauseUpdates.val == false && _localTransform != null && _remoteTransform != null)
+        if (_pauseUpdates.val == false && _localControllerTransform != null && _remoteControllerTransform != null)
         {
             //source: https://forum.unity.com/threads/lookat-with-an-offset.585250/
 
-            _localTransform.rotation =
-                Quaternion.LookRotation(_remoteTransform.position - _localTransform.position) *
+            _localControllerTransform.rotation =
+                Quaternion.LookRotation(_remoteControllerTransform.position - _localControllerTransform.position) *
                 Quaternion.Euler(_angle_offset_x.val, _angle_offset_y.val, _angle_offset_z.val);
         }
     }
@@ -72,7 +72,7 @@ public class RotatorPlugin : MVRScript
 
     void SetLocalController(JSONStorableStringChooser uiControl)
     {
-        _localTransform = ControllerByName(containingAtom, uiControl.val).transform;
+        _localControllerTransform = ControllerByName(containingAtom, uiControl.val).transform;
     }
 
     void SetRemoteAtom(JSONStorableStringChooser uiControl)
@@ -82,7 +82,7 @@ public class RotatorPlugin : MVRScript
 
     void SetRemoteController(JSONStorableStringChooser uiControl)
     {
-        _remoteTransform = ControllerByName(RemoteAtom, uiControl.val).transform;
+        _remoteControllerTransform = ControllerByName(RemoteAtom, uiControl.val).transform;
     }
 
     void SyncLocalControllerChoices()
@@ -161,7 +161,7 @@ public class RotatorPlugin : MVRScript
 
     void SetOffsetToCurrent()
     {
-        var rotation = Quaternion.Inverse(Quaternion.LookRotation(_remoteTransform.position - _localTransform.position)) * _localTransform.rotation;
+        var rotation = Quaternion.Inverse(Quaternion.LookRotation(_remoteControllerTransform.position - _localControllerTransform.position)) * _localControllerTransform.rotation;
 
         _angle_offset_x.val = ParseAngle(rotation.eulerAngles.x);
         _angle_offset_y.val = ParseAngle(rotation.eulerAngles.y);
