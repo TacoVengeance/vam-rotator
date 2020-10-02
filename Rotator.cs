@@ -33,10 +33,11 @@ public class RotatorPlugin : MVRScript
         SetUpLabel("Point this controller of the current atom...");
 
         _localController =  SetUpChooser("LocalController",  "Local Controller",  SetLocalController,  SyncLocalControllerChoices);
+        AutoSelectSoleController(containingAtom, _localController);
 
         SetUpLabel("... towards this other controller:");
 
-        _remoteAtom =       SetUpChooser("RemoteAtom",       "Remote Atom",       null,                SyncRemoteAtomChoices);
+        _remoteAtom =       SetUpChooser("RemoteAtom",       "Remote Atom",       SetRemoteAtom,       SyncRemoteAtomChoices);
         _remoteController = SetUpChooser("RemoteController", "Remote Controller", SetRemoteController, SyncRemoteControllerChoices);
 
         _angle_offset_x = SetUpFloat("X angle offset", 0f, -180f, 180f);
@@ -71,6 +72,11 @@ public class RotatorPlugin : MVRScript
     void SetLocalController(JSONStorableStringChooser uiControl)
     {
         _localTransform = ControllerByName(containingAtom, uiControl.val).transform;
+    }
+
+    void SetRemoteAtom(JSONStorableStringChooser uiControl)
+    {
+        AutoSelectSoleController(RemoteAtom, _remoteController);
     }
 
     void SetRemoteController(JSONStorableStringChooser uiControl)
@@ -163,6 +169,16 @@ public class RotatorPlugin : MVRScript
     float ParseAngle(float angle)
     {
         return angle > 180 ? angle - 360 : angle;
+    }
+
+    void AutoSelectSoleController(Atom atom, JSONStorableStringChooser controllerChooser)
+    {
+        //if atom only has one controller, then select it
+        var controllers = ControllersFor(atom);
+        if (controllers.Count == 1)
+        {
+            controllerChooser.val = controllers.First().name;
+        }
     }
 
     #endregion
