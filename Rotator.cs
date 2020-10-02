@@ -24,29 +24,36 @@ public class RotatorPlugin : MVRScript
     public JSONStorableFloat _angle_offset_z;
 
     public JSONStorableBool _pauseUpdates;
+    public UIDynamicButton _setOffsetToCurrent;
+    public UIDynamicButton _setOffsetsToZero;
 
     Transform _localTransform = null;
     Transform _remoteTransform = null;
 
+    static bool UseRightSide = true;
+
     public override void Init()
     {
-        SetUpLabel("Point this controller of the current atom...");
+        SetUpLabel("Point this controller of the current atom:");
 
         _localController =  SetUpChooser("LocalController",  "Local Controller",  SetLocalController,  SyncLocalControllerChoices);
         AutoSelectSoleController(containingAtom, _localController);
 
-        SetUpLabel("... towards this other controller:");
+        SetUpLabel("Towards this other controller:", 2);
 
         _remoteAtom =       SetUpChooser("RemoteAtom",       "Remote Atom",       SetRemoteAtom,       SyncRemoteAtomChoices);
         _remoteController = SetUpChooser("RemoteController", "Remote Controller", SetRemoteController, SyncRemoteControllerChoices);
+
+        SetUpLabel("Optional angle offsets:", 4);
 
         _angle_offset_x = SetUpFloat("X angle offset", 0f, -180f, 180f);
         _angle_offset_y = SetUpFloat("Y angle offset", 0f, -180f, 180f);
         _angle_offset_z = SetUpFloat("Z angle offset", 0f, -180f, 180f);
 
-        _pauseUpdates = SetUpBool("Pause updates", false);
-        SetUpButton("Record current angle offset", SetOffsetToCurrent);
-        SetUpButton("Reset offsets to zero",       SetOffsetsToZero);
+        _setOffsetToCurrent = SetUpButton("Record current angle offset", SetOffsetToCurrent);
+        _setOffsetsToZero   = SetUpButton("Reset offsets to zero",       SetOffsetsToZero);
+
+        _pauseUpdates =       SetUpBool("Pause updates", false);
     }
 
     public void FixedUpdate()
@@ -96,6 +103,13 @@ public class RotatorPlugin : MVRScript
         _remoteAtom.choices = SuperController.singleton.GetAtoms().Select(fc => fc.name).ToList();
     }
 
+    void SetUpLabel(string text, int rows = 1)
+    {
+        var tf = CreateTextField(new JSONStorableString("", ""));
+        tf.text = "\n" + text;
+        tf.height = 120f + (rows - 1) * 135f;
+    }
+
     JSONStorableStringChooser SetUpChooser(string paramName, string displayName, JSONStorableStringChooser.SetJSONStringCallback setCallback, UIPopup.OnOpenPopup syncCallback)
     {
         var chooser = new JSONStorableStringChooser(paramName, null, null, displayName, setCallback);
@@ -107,7 +121,7 @@ public class RotatorPlugin : MVRScript
             setCallback(chooser);
         }
 
-        var _dp = CreateFilterablePopup(chooser);
+        var _dp = CreateFilterablePopup(chooser, UseRightSide);
         _dp.popup.onOpenPopupHandlers += syncCallback;
 
         return chooser;
@@ -118,7 +132,7 @@ public class RotatorPlugin : MVRScript
         var floatJSON = new JSONStorableFloat(paramName, startingValue, minimum, maximum);
         RegisterFloat(floatJSON);
         floatJSON.storeType = JSONStorableParam.StoreType.Full;
-        CreateSlider(floatJSON);
+        CreateSlider(floatJSON, UseRightSide);
         return floatJSON;
     }
 
@@ -127,21 +141,15 @@ public class RotatorPlugin : MVRScript
         var boolJSON = new JSONStorableBool(paramName, startingValue);
         RegisterBool(boolJSON);
         boolJSON.storeType = JSONStorableParam.StoreType.Full;
-        CreateToggle(boolJSON);
+        CreateToggle(boolJSON, UseRightSide);
         return boolJSON;
     }
 
-    void SetUpLabel(string text)
+    UIDynamicButton SetUpButton(string displayName, UnityEngine.Events.UnityAction callback)
     {
-        var tf = CreateTextField(new JSONStorableString("", ""));
-        tf.text = text;
-        tf.height = 10;
-    }
-
-    void SetUpButton(string displayName, UnityEngine.Events.UnityAction callback)
-    {
-        var button = CreateButton(displayName);
+        var button = CreateButton(displayName, UseRightSide);
         button.button.onClick.AddListener(callback);
+        return button;
     }
 
     void SetOffsetsToZero()
