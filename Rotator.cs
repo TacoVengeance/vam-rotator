@@ -70,16 +70,12 @@ public class RotatorPlugin : MVRScript
 
     void SetLocalController(JSONStorableStringChooser uiControl)
     {
-        _localTransform =
-            ControllerByName(containingAtom, uiControl.val).
-            transform;
+        _localTransform = ControllerByName(containingAtom, uiControl.val).transform;
     }
 
     void SetRemoteController(JSONStorableStringChooser uiControl)
     {
-        _remoteTransform =
-            ControllerByName(RemoteAtom, uiControl.val).
-            transform;
+        _remoteTransform = ControllerByName(RemoteAtom, uiControl.val).transform;
     }
 
     void SyncLocalControllerChoices()
